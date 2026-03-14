@@ -20,7 +20,7 @@ A powerful, minimalist WordPress plugin to download public Facebook videos and R
 - **Smart Filenaming**: Automatically names downloaded files based on the video title.
 
 ## 🛠️ Installation
-1.  **Download the ZIP**: Grab the latest release `Facebook Video Downloader V.1.0.0.zip`.
+1.  **Download the ZIP**: Grab the latest release `Facebook Video Downloader V.2.0.zip`.
 2.  **Upload to WordPress**: Go to **Plugins > Add New > Upload Plugin**.
 3.  **Activate**: Once activated, locate the **"FB Downloader"** menu in your WordPress sidebar.
 
