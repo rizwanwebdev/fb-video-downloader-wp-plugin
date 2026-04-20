@@ -2,7 +2,7 @@
 /**
  * Plugin Name: All Facebook Video Downloader
  * Description: Download and preview videos from Facebook (Reels, Watch, and Public Videos). Includes Appearance Customization, Ads, and Custom Player. Shortcode: [video_downloader]
- * Version: 2.0
+ * Version: 2.1
  * Author: Rizwan
  * Author URI: https://rizwan.one
  */
