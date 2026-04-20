@@ -151,12 +151,11 @@ jQuery(document).ready(function($) {
     }
 
     $('#uvd-close-ad').on('click', function() {
-        $('#uvd-ad-modal').fadeOut(200, function() {
-            if (pendingDownload) {
-                downloadVideo(pendingDownload.url, pendingDownload.filename, pendingDownload.btn);
-                pendingDownload = null;
-            }
-        });
+        if (pendingDownload) {
+            downloadVideo(pendingDownload.url, pendingDownload.filename, pendingDownload.btn);
+            pendingDownload = null;
+        }
+        $('#uvd-ad-modal').fadeOut(200);
     });
 
     function downloadVideo(url, filename, btn) {
