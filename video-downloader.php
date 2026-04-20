@@ -45,8 +45,12 @@ class UniversalVideoDownloader {
 
         // Appearance Settings
         register_setting('uvd_settings_group', 'uvd_input_border_color');
-        register_setting('uvd_settings_group', 'uvd_button_bg_color');
-        register_setting('uvd_settings_group', 'uvd_button_text_color');
+        register_setting('uvd_settings_group', 'uvd_fetch_btn_bg');
+        register_setting('uvd_settings_group', 'uvd_fetch_btn_text');
+        register_setting('uvd_settings_group', 'uvd_hd_btn_bg');
+        register_setting('uvd_settings_group', 'uvd_hd_btn_text');
+        register_setting('uvd_settings_group', 'uvd_sd_btn_bg');
+        register_setting('uvd_settings_group', 'uvd_sd_btn_text');
         register_setting('uvd_settings_group', 'uvd_placeholder_text');
         register_setting('uvd_settings_group', 'uvd_button_text');
 
@@ -61,8 +65,13 @@ class UniversalVideoDownloader {
 
         // Appearance Fields
         add_settings_field('uvd_input_border_color', 'Input Border Color', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_input_border_color', 'type' => 'color', 'default' => '#dddfe2']);
-        add_settings_field('uvd_button_bg_color', 'Button Background Color', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_button_bg_color', 'type' => 'color', 'default' => '#0866ff']);
-        add_settings_field('uvd_button_text_color', 'Button Text Color', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_button_text_color', 'type' => 'color', 'default' => '#ffffff']);
+        add_settings_field('uvd_fetch_btn_bg', 'Fetch Button BG Color', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_fetch_btn_bg', 'type' => 'color', 'default' => '#0866ff']);
+        add_settings_field('uvd_fetch_btn_text', 'Fetch Button Text Color', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_fetch_btn_text', 'type' => 'color', 'default' => '#ffffff']);
+        add_settings_field('uvd_hd_btn_bg', 'HD Button BG Color', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_hd_btn_bg', 'type' => 'color', 'default' => '#0866ff']);
+        add_settings_field('uvd_hd_btn_text', 'HD Button Text Color', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_hd_btn_text', 'type' => 'color', 'default' => '#ffffff']);
+        add_settings_field('uvd_sd_btn_bg', 'SD Button BG Color', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_sd_btn_bg', 'type' => 'color', 'default' => '#f0f2f5']);
+        add_settings_field('uvd_sd_btn_text', 'SD Button Text Color', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_sd_btn_text', 'type' => 'color', 'default' => '#1c1e21']);
+        
         add_settings_field('uvd_placeholder_text', 'Input Placeholder', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_placeholder_text', 'type' => 'text', 'placeholder' => 'Paste Facebook Video URL here...']);
         add_settings_field('uvd_button_text', 'Fetch Button Text', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_button_text', 'type' => 'text', 'placeholder' => 'Download']);
     }
@@ -73,7 +82,8 @@ class UniversalVideoDownloader {
     }
 
     public function render_input($args) {
-        $val = get_option($args['id']);
+        $default = isset($args['default']) ? $args['default'] : '';
+        $val = get_option($args['id'], $default);
         $type = isset($args['type']) ? $args['type'] : 'text';
         $placeholder = isset($args['placeholder']) ? $args['placeholder'] : '';
         echo "<input type='$type' name='{$args['id']}' value='" . esc_attr($val) . "' placeholder='$placeholder' style='width: 300px;' />";
@@ -115,8 +125,13 @@ class UniversalVideoDownloader {
 
     public function shortcode_html() {
         $border_color = get_option('uvd_input_border_color', '#dddfe2');
-        $btn_bg       = get_option('uvd_button_bg_color', '#0866ff');
-        $btn_text_color = get_option('uvd_button_text_color', '#ffffff');
+        $fetch_bg     = get_option('uvd_fetch_btn_bg', '#0866ff');
+        $fetch_color  = get_option('uvd_fetch_btn_text', '#ffffff');
+        $hd_bg        = get_option('uvd_hd_btn_bg', '#0866ff');
+        $hd_color     = get_option('uvd_hd_btn_text', '#ffffff');
+        $sd_bg        = get_option('uvd_sd_btn_bg', '#f0f2f5');
+        $sd_color     = get_option('uvd_sd_btn_text', '#1c1e21');
+        
         $placeholder  = get_option('uvd_placeholder_text', 'Paste Facebook Video URL here...');
         $btn_text     = get_option('uvd_button_text', 'Download');
 
@@ -124,9 +139,10 @@ class UniversalVideoDownloader {
         ?>
         <style>
             .uvd-main-wrapper #uvd-url-input { border-color: <?php echo esc_attr($border_color); ?> !important; }
-            .uvd-main-wrapper #uvd-fetch-btn { background: <?php echo esc_attr($btn_bg); ?> !important; color: <?php echo esc_attr($btn_text_color); ?> !important; }
+            .uvd-main-wrapper #uvd-fetch-btn { background: <?php echo esc_attr($fetch_bg); ?> !important; color: <?php echo esc_attr($fetch_color); ?> !important; }
             .uvd-main-wrapper #uvd-fetch-btn:hover { filter: brightness(90%); }
-            .uvd-main-wrapper .uvd-download-btn.hd { background: <?php echo esc_attr($btn_bg); ?> !important; border-color: <?php echo esc_attr($btn_bg); ?> !important; color: <?php echo esc_attr($btn_text_color); ?> !important; }
+            .uvd-main-wrapper .uvd-download-btn.hd { background: <?php echo esc_attr($hd_bg); ?> !important; border-color: <?php echo esc_attr($hd_bg); ?> !important; color: <?php echo esc_attr($hd_color); ?> !important; }
+            .uvd-main-wrapper .uvd-download-btn.uvd-download-sd { background: <?php echo esc_attr($sd_bg); ?> !important; color: <?php echo esc_attr($sd_color); ?> !important; }
         </style>
         <div class="uvd-main-wrapper">
             <div class="uvd-form-row">
