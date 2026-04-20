@@ -159,25 +159,24 @@ jQuery(document).ready(function($) {
         });
     });
 
-    async function downloadVideo(url, filename, btn) {
-        const originalHtml = btn.html();
-        btn.prop('disabled', true).html('Downloading...');
-        try {
-            const response = await fetch(url);
-            const blob = await response.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = blobUrl;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(blobUrl);
-            document.body.removeChild(a);
-        } catch (error) {
-            window.open(url, '_blank');
-        } finally {
-            btn.prop('disabled', false).html(originalHtml);
+    function downloadVideo(url, filename, btn) {
+        // Append &dl=1 to the URL to tell Facebook CDN to force download
+        var downloadUrl = url;
+        if (downloadUrl.indexOf('dl=1') === -1) {
+            if (downloadUrl.indexOf('?') === -1) {
+                downloadUrl += '?dl=1';
+            } else {
+                downloadUrl += '&dl=1';
+            }
         }
+        
+        var a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = downloadUrl;
+        // The download attribute suggests a filename, but native fbcdn handles the content-disposition
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 });
