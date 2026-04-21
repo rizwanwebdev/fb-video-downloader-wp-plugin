@@ -24,9 +24,9 @@ jQuery(document).ready(function($) {
 
         $('#uvd-result-container, #uvd-error-container').hide().empty();
         btn.prop('disabled', true);
-        btn.css('pointer-events', 'none');
         text.hide();
-        loader.show();
+        
+        loader.css('display', 'inline-block');
         isFetching = true;
 
         $.post(uvd_ajax.ajax_url, {
@@ -40,14 +40,12 @@ jQuery(document).ready(function($) {
                 $('#uvd-error-container').html('<p style="margin:0;">' + response.data.message + '</p>').fadeIn();
             }
             btn.prop('disabled', false);
-            btn.css('pointer-events', 'auto');
             text.show();
             loader.hide();
             isFetching = false;
         }).fail(function() {
             $('#uvd-error-container').html('<p style="margin:0;">Network error. Please try again.</p>').fadeIn();
             btn.prop('disabled', false);
-            btn.css('pointer-events', 'auto');
             text.show();
             loader.hide();
             isFetching = false;
@@ -80,14 +78,14 @@ jQuery(document).ready(function($) {
         if (data.hd) {
             var hdFilename = baseFilename + '-hd.mp4';
             var hdUrl = data.hd + (data.hd.indexOf('?') === -1 ? '?dl=1' : '&dl=1');
-            html += '<a href="' + hdUrl + '" download="' + hdFilename + '" class="uvd-download-btn uvd-download-hd hd" data-type="hd" target="_blank">';
+            html += '<a href="' + hdUrl + '" download="' + hdFilename + '" class="uvd-download-btn uvd-download-hd hd" data-type="hd" >';
             html += '<svg style="width:20px;height:20px;margin-right:8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>';
             html += 'Download HD</a>';
         }
         if (data.sd) {
              var sdFilename = baseFilename + '-sd.mp4';
              var sdUrl = data.sd + (data.sd.indexOf('?') === -1 ? '?dl=1' : '&dl=1');
-             html += '<a href="' + sdUrl + '" download="' + sdFilename + '" class="uvd-download-btn uvd-download-sd" data-type="sd" target="_blank">';
+             html += '<a href="' + sdUrl + '" download="' + sdFilename + '" class="uvd-download-btn uvd-download-sd" data-type="sd" >';
              html += '<svg style="width:20px;height:20px;margin-right:8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>';
              html += 'Download SD</a>';
         }

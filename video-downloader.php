@@ -2,7 +2,7 @@
 /**
  * Plugin Name: All Facebook Video Downloader
  * Description: Download and preview videos from Facebook (Reels, Watch, and Public Videos). Includes Appearance Customization, Ads, and Custom Player. Shortcode: [video_downloader]
- * Version: 2.1
+ * Version: 2.2
  * Author: Rizwan
  * Author URI: https://rizwan.one
  */
@@ -51,6 +51,7 @@ class UniversalVideoDownloader {
         register_setting('uvd_settings_group', 'uvd_hd_btn_text');
         register_setting('uvd_settings_group', 'uvd_sd_btn_bg');
         register_setting('uvd_settings_group', 'uvd_sd_btn_text');
+        register_setting('uvd_settings_group', 'uvd_spinner_color');
         register_setting('uvd_settings_group', 'uvd_placeholder_text');
         register_setting('uvd_settings_group', 'uvd_button_text');
 
@@ -71,6 +72,7 @@ class UniversalVideoDownloader {
         add_settings_field('uvd_hd_btn_text', 'HD Button Text Color', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_hd_btn_text', 'type' => 'color', 'default' => '#ffffff']);
         add_settings_field('uvd_sd_btn_bg', 'SD Button BG Color', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_sd_btn_bg', 'type' => 'color', 'default' => '#f0f2f5']);
         add_settings_field('uvd_sd_btn_text', 'SD Button Text Color', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_sd_btn_text', 'type' => 'color', 'default' => '#1c1e21']);
+        add_settings_field('uvd_spinner_color', 'Spinner Color', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_spinner_color', 'type' => 'color', 'default' => '#ffffff']);
         
         add_settings_field('uvd_placeholder_text', 'Input Placeholder', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_placeholder_text', 'type' => 'text', 'placeholder' => 'Paste Facebook Video URL here...']);
         add_settings_field('uvd_button_text', 'Fetch Button Text', [$this, 'render_input'], 'uvd-settings', 'uvd_appearance_section', ['id' => 'uvd_button_text', 'type' => 'text', 'placeholder' => 'Download']);
@@ -131,6 +133,7 @@ class UniversalVideoDownloader {
         $hd_color     = get_option('uvd_hd_btn_text', '#ffffff');
         $sd_bg        = get_option('uvd_sd_btn_bg', '#f0f2f5');
         $sd_color     = get_option('uvd_sd_btn_text', '#1c1e21');
+        $spinner_color = get_option('uvd_spinner_color', '#ffffff');
         
         $placeholder  = get_option('uvd_placeholder_text', 'Paste Facebook Video URL here...');
         $btn_text     = get_option('uvd_button_text', 'Download');
@@ -149,7 +152,7 @@ class UniversalVideoDownloader {
                 <input type="text" id="uvd-url-input" placeholder="<?php echo esc_attr($placeholder); ?>" required />
                 <button id="uvd-fetch-btn">
                     <span class="uvd-btn-text"><?php echo esc_html($btn_text); ?></span>
-                    <div class="uvd-loader" style="display:none;"></div>
+                    <span class="uvd-loader" style="display:none; width: 20px; height: 20px; border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid <?php echo esc_attr($spinner_color); ?>; border-radius: 50%; vertical-align: middle; margin-left: 10px;"></span>
                 </button>
             </div>
             <div id="uvd-error-container" style="display:none;"></div>
