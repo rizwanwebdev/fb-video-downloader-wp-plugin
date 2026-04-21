@@ -79,15 +79,17 @@ jQuery(document).ready(function($) {
         html += '<div class="uvd-download-options">';
         if (data.hd) {
             var hdFilename = baseFilename + '-hd.mp4';
-            html += '<button type="button" class="uvd-download-btn uvd-download-hd hd" data-url="' + data.hd + '" data-filename="' + hdFilename + '" data-type="hd">';
+            var hdUrl = data.hd + (data.hd.indexOf('?') === -1 ? '?dl=1' : '&dl=1');
+            html += '<a href="' + hdUrl + '" download="' + hdFilename + '" class="uvd-download-btn uvd-download-hd hd" data-type="hd" target="_blank">';
             html += '<svg style="width:20px;height:20px;margin-right:8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>';
-            html += 'Download HD</button>';
+            html += 'Download HD</a>';
         }
         if (data.sd) {
              var sdFilename = baseFilename + '-sd.mp4';
-             html += '<button type="button" class="uvd-download-btn uvd-download-sd" data-url="' + data.sd + '" data-filename="' + sdFilename + '" data-type="sd">';
+             var sdUrl = data.sd + (data.sd.indexOf('?') === -1 ? '?dl=1' : '&dl=1');
+             html += '<a href="' + sdUrl + '" download="' + sdFilename + '" class="uvd-download-btn uvd-download-sd" data-type="sd" target="_blank">';
              html += '<svg style="width:20px;height:20px;margin-right:8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>';
-             html += 'Download SD</button>';
+             html += 'Download SD</a>';
         }
         html += '</div>';
 
@@ -114,23 +116,19 @@ jQuery(document).ready(function($) {
             videoWrapper.find('.uvd-video-play-pause-overlay').html('<div class="uvd-play-icon"></div>');
         });
 
-        $('.uvd-download-btn').on('click', function() {
+        $('.uvd-download-btn').on('click', function(e) {
             var $this = $(this);
             var type = $this.attr('data-type');
-            var videoInfo = {
-                url: $this.attr('data-url'),
-                filename: $this.attr('data-filename'),
-                btn: $this
-            };
-
             var shouldShowAd = (type === 'hd' && uvd_ajax.enable_ads_hd) || (type === 'sd' && uvd_ajax.enable_ads_sd);
 
             if (shouldShowAd) {
-                pendingDownload = videoInfo;
+                e.preventDefault(); // Stop native navigation to show the ad modal
+                pendingDownload = {
+                    url: $this.attr('href')
+                };
                 showAdModal();
-            } else {
-                downloadVideo(videoInfo.url, videoInfo.filename, videoInfo.btn);
             }
+            // If no ad, let the browser natively follow the <a> href and download the file.
         });
 
         $('html, body').animate({
@@ -162,30 +160,10 @@ jQuery(document).ready(function($) {
 
     $('#uvd-close-ad').on('click', function() {
         if (pendingDownload) {
-            downloadVideo(pendingDownload.url, pendingDownload.filename, pendingDownload.btn);
+            // Trigger native download navigation (this is fully supported by iOS Safari for cross-origin if headers are correct)
+            window.location.href = pendingDownload.url;
             pendingDownload = null;
         }
         $('#uvd-ad-modal').fadeOut(200);
     });
-
-    function downloadVideo(url, filename, btn) {
-        // Append &dl=1 to the URL to tell Facebook CDN to force download
-        var downloadUrl = url;
-        if (downloadUrl.indexOf('dl=1') === -1) {
-            if (downloadUrl.indexOf('?') === -1) {
-                downloadUrl += '?dl=1';
-            } else {
-                downloadUrl += '&dl=1';
-            }
-        }
-        
-        var a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = downloadUrl;
-        // The download attribute suggests a filename, but native fbcdn handles the content-disposition
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }
 });
