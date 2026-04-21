@@ -146,7 +146,7 @@ class UniversalVideoDownloader {
         </style>
         <div class="uvd-main-wrapper">
             <div class="uvd-form-row">
-                <input type="url" id="uvd-url-input" placeholder="<?php echo esc_attr($placeholder); ?>" required />
+                <input type="text" id="uvd-url-input" placeholder="<?php echo esc_attr($placeholder); ?>" required />
                 <button id="uvd-fetch-btn">
                     <span class="uvd-btn-text"><?php echo esc_html($btn_text); ?></span>
                     <div class="uvd-loader" style="display:none;"></div>

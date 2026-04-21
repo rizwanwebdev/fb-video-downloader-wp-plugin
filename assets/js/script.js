@@ -1,12 +1,16 @@
 jQuery(document).ready(function($) {
     let pendingDownload = null;
+    let isFetching = false;
 
     $('.uvd-main-wrapper').on('contextmenu', 'video, .uvd-download-btn, .uvd-video-preview-wrapper', function(e) {
         e.preventDefault();
         return false;
     });
 
-    $('#uvd-fetch-btn').on('click', function() {
+    $('#uvd-fetch-btn').on('click', function(e) {
+        e.preventDefault();
+        if (isFetching) return;
+        
         var urlInput = $('#uvd-url-input');
         var url = urlInput.val().trim();
         if (!url) {
@@ -20,8 +24,10 @@ jQuery(document).ready(function($) {
 
         $('#uvd-result-container, #uvd-error-container').hide().empty();
         btn.prop('disabled', true);
+        btn.css('pointer-events', 'none');
         text.hide();
         loader.show();
+        isFetching = true;
 
         $.post(uvd_ajax.ajax_url, {
             action: 'fetch_video_info',
@@ -34,13 +40,17 @@ jQuery(document).ready(function($) {
                 $('#uvd-error-container').html('<p style="margin:0;">' + response.data.message + '</p>').fadeIn();
             }
             btn.prop('disabled', false);
+            btn.css('pointer-events', 'auto');
             text.show();
             loader.hide();
+            isFetching = false;
         }).fail(function() {
             $('#uvd-error-container').html('<p style="margin:0;">Network error. Please try again.</p>').fadeIn();
             btn.prop('disabled', false);
+            btn.css('pointer-events', 'auto');
             text.show();
             loader.hide();
+            isFetching = false;
         });
     });
 

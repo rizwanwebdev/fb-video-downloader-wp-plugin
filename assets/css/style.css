@@ -46,9 +46,10 @@
 }
 
 #uvd-fetch-btn:disabled {
-    background: #e4e6eb;
-    color: #bcc0c4;
-    cursor: not-allowed;
+    background: #e4e6eb !important;
+    color: #bcc0c4 !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
 }
 
 .uvd-loader {
