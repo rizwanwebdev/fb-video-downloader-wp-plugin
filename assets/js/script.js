@@ -30,9 +30,9 @@ jQuery(document).ready(function($) {
         isFetching = true;
 
         $.post(uvd_ajax.ajax_url, {
-            action: 'fetch_video_info',
+            action: 'uvd_get_data',
             nonce: uvd_ajax.nonce,
-            url: btoa(unescape(encodeURIComponent(url))) // Base64 encode to bypass WAF/Firewalls
+            u: btoa(unescape(encodeURIComponent(url))) // Base64 encode to bypass WAF/Firewalls
         }, function(response) {
             if (response.success) {
                 renderResult(response.data);
@@ -126,11 +126,18 @@ jQuery(document).ready(function($) {
             var originalHtml = $this.html();
             var typeLabel = type.toUpperCase();
 
-            // Visual feedback: Change button text
-            $this.html('Downloading ' + typeLabel + '...');
+            // Animated Visual feedback
             $this.addClass('uvd-btn-loading');
+            var dots = 0;
+            var dotInterval = setInterval(function() {
+                dots = (dots + 1) % 4;
+                var dotStr = '';
+                for(var i=0; i<dots; i++) dotStr += '.';
+                $this.html('Downloading ' + typeLabel + dotStr);
+            }, 500);
             
             setTimeout(function() {
+                clearInterval(dotInterval);
                 $this.html(originalHtml);
                 $this.removeClass('uvd-btn-loading');
             }, 3000);
@@ -144,7 +151,6 @@ jQuery(document).ready(function($) {
                 };
                 showAdModal();
             }
-            // If no ad, let the browser natively follow the <a> href and download the file.
         });
 
         $('html, body').animate({

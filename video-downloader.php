@@ -16,8 +16,8 @@ class UniversalVideoDownloader {
     public function __construct() {
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
         add_shortcode('video_downloader', [$this, 'shortcode_html']);
-        add_action('wp_ajax_nopriv_fetch_video_info', [$this, 'fetch_video_info']);
-        add_action('wp_ajax_fetch_video_info', [$this, 'fetch_video_info']);
+        add_action('wp_ajax_nopriv_uvd_get_data', [$this, 'handle_ajax_request']);
+        add_action('wp_ajax_uvd_get_data', [$this, 'handle_ajax_request']);
         
         // Admin Settings
         add_action('admin_menu', [$this, 'add_admin_menu']);
@@ -173,12 +173,19 @@ class UniversalVideoDownloader {
         return json_decode('"' . $str . '"');
     }
 
-    public function fetch_video_info() {
+    public function handle_ajax_request() {
         check_ajax_referer('uvd_nonce', 'nonce');
         
-        $url_raw = isset($_POST['url']) ? $_POST['url'] : '';
-        // Decode base64 URL sent from JS
-        $url = base64_decode($url_raw);
+        $url_input = isset($_POST['u']) ? $_POST['u'] : '';
+        
+        // Try decoding as base64 first
+        $url = base64_decode($url_input, true);
+        
+        // If decoding failed or result is not a URL, fallback to raw input
+        if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
+            $url = $url_input;
+        }
+        
         $url = esc_url_raw($url);
 
         if (empty($url) || !preg_match('/(facebook\.com|fb\.watch)/', $url)) {
