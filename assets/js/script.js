@@ -32,7 +32,7 @@ jQuery(document).ready(function($) {
         $.post(uvd_ajax.ajax_url, {
             action: 'fetch_video_info',
             nonce: uvd_ajax.nonce,
-            url: url
+            url: btoa(unescape(encodeURIComponent(url))) // Base64 encode to bypass WAF/Firewalls
         }, function(response) {
             if (response.success) {
                 renderResult(response.data);
@@ -43,8 +43,14 @@ jQuery(document).ready(function($) {
             text.show();
             loader.hide();
             isFetching = false;
-        }).fail(function() {
-            $('#uvd-error-container').html('<p style="margin:0;">Network error. Please try again.</p>').fadeIn();
+        }).fail(function(xhr) {
+            var status = xhr.status;
+            var msg = 'Network error (' + status + '). Please try again.';
+            if (status === 403) msg = 'Access Denied (403). A security plugin/firewall is blocking the request.';
+            if (status === 500) msg = 'Server Error (500). Please check your website error logs.';
+            if (status === 0) msg = 'Connection failed. Check your internet or browser privacy extensions.';
+            
+            $('#uvd-error-container').html('<p style="margin:0;">' + msg + '</p>').fadeIn();
             btn.prop('disabled', false);
             text.show();
             loader.hide();
@@ -117,6 +123,18 @@ jQuery(document).ready(function($) {
         $('.uvd-download-btn').on('click', function(e) {
             var $this = $(this);
             var type = $this.attr('data-type');
+            var originalHtml = $this.html();
+            var typeLabel = type.toUpperCase();
+
+            // Visual feedback: Change button text
+            $this.html('Downloading ' + typeLabel + '...');
+            $this.addClass('uvd-btn-loading');
+            
+            setTimeout(function() {
+                $this.html(originalHtml);
+                $this.removeClass('uvd-btn-loading');
+            }, 3000);
+
             var shouldShowAd = (type === 'hd' && uvd_ajax.enable_ads_hd) || (type === 'sd' && uvd_ajax.enable_ads_sd);
 
             if (shouldShowAd) {

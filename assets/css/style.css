@@ -191,6 +191,12 @@
     background: #0055d4;
 }
 
+.uvd-download-btn.uvd-btn-loading {
+    opacity: 0.7;
+    pointer-events: none;
+    cursor: default;
+}
+
 /* Ad Modal Styling */
 .uvd-modal-overlay {
     position: fixed;

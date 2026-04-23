@@ -175,7 +175,12 @@ class UniversalVideoDownloader {
 
     public function fetch_video_info() {
         check_ajax_referer('uvd_nonce', 'nonce');
-        $url = isset($_POST['url']) ? esc_url_raw($_POST['url']) : '';
+        
+        $url_raw = isset($_POST['url']) ? $_POST['url'] : '';
+        // Decode base64 URL sent from JS
+        $url = base64_decode($url_raw);
+        $url = esc_url_raw($url);
+
         if (empty($url) || !preg_match('/(facebook\.com|fb\.watch)/', $url)) {
             wp_send_json_error(['message' => 'Please provide a valid Facebook video URL.']);
         }
@@ -201,6 +206,7 @@ class UniversalVideoDownloader {
 
         $response = wp_remote_get($url, $wp_args);
         if (is_wp_error($response)) {
+            error_log('UVD Fetch Error: ' . $response->get_error_message());
             wp_send_json_error(['message' => 'Failed to reach Facebook: ' . $response->get_error_message()]);
         }
 
