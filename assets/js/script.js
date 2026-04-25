@@ -1,17 +1,19 @@
 jQuery(document).ready(function($) {
     let pendingDownload = null;
-    let isFetching = false;
 
-    $('.uvd-main-wrapper').on('contextmenu', 'video, .uvd-download-btn, .uvd-video-preview-wrapper', function(e) {
+    // Prevent context menu on videos/images to protect sources
+    $('.uvd-main-wrapper').on('contextmenu', 'video, img, .uvd-download-btn, .uvd-video-preview-wrapper', function(e) {
         e.preventDefault();
         return false;
     });
 
-    $('#uvd-fetch-btn').on('click', function(e) {
+    $('.uvd-main-wrapper').on('click', '#uvd-fetch-btn', function(e) {
         e.preventDefault();
-        if (isFetching) return;
         
-        var urlInput = $('#uvd-url-input');
+        var wrapper = $(this).closest('.uvd-main-wrapper');
+        if (wrapper.data('isFetching')) return;
+        
+        var urlInput = wrapper.find('#uvd-url-input');
         var url = urlInput.val().trim();
         if (!url) {
             urlInput.focus();
@@ -22,12 +24,12 @@ jQuery(document).ready(function($) {
         var loader = btn.find('.uvd-loader');
         var text = btn.find('.uvd-btn-text');
 
-        $('#uvd-result-container, #uvd-error-container').hide().empty();
+        wrapper.find('#uvd-result-container, #uvd-error-container').hide().empty();
         btn.prop('disabled', true);
         text.hide();
         
         loader.css('display', 'inline-block');
-        isFetching = true;
+        wrapper.data('isFetching', true);
 
         $.post(uvd_ajax.ajax_url, {
             action: 'uvd_get_data',
@@ -35,26 +37,26 @@ jQuery(document).ready(function($) {
             u: btoa(unescape(encodeURIComponent(url))) // Base64 encode to bypass WAF/Firewalls
         }, function(response) {
             if (response.success) {
-                renderResult(response.data);
+                renderResult(response.data, wrapper);
             } else {
-                $('#uvd-error-container').html('<p style="margin:0;">' + response.data.message + '</p>').fadeIn();
+                wrapper.find('#uvd-error-container').html('<p style="margin:0;">' + response.data.message + '</p>').fadeIn();
             }
             btn.prop('disabled', false);
             text.show();
             loader.hide();
-            isFetching = false;
+            wrapper.data('isFetching', false);
         }).fail(function(xhr) {
             var status = xhr.status;
             var msg = 'Network error (' + status + '). Please try again.';
-            if (status === 403) msg = 'Access Denied (403). A security plugin/firewall is blocking the request.';
+            if (status === 403) msg = '<strong>Access Denied (403)</strong>: Your hosting firewall (ModSecurity) is blocking the request. Please disable ModSecurity in cPanel or whitelist this action.';
             if (status === 500) msg = 'Server Error (500). Please check your website error logs.';
             if (status === 0) msg = 'Connection failed. Check your internet or browser privacy extensions.';
             
-            $('#uvd-error-container').html('<p style="margin:0;">' + msg + '</p>').fadeIn();
+            wrapper.find('#uvd-error-container').html('<p style="margin:0;">' + msg + '</p>').fadeIn();
             btn.prop('disabled', false);
             text.show();
             loader.hide();
-            isFetching = false;
+            wrapper.data('isFetching', false);
         });
     });
 
@@ -66,14 +68,14 @@ jQuery(document).ready(function($) {
             .substring(0, 100);
     }
 
-    function renderResult(data) {
+    function renderResult(data, wrapper) {
         var html = '';
         var previewUrl = data.hd || data.sd;
         var baseFilename = sanitizeFilename(data.title || 'fb-video');
 
         if (previewUrl) {
             html += '<div class="uvd-video-preview-wrapper">';
-            html += '  <video src="' + previewUrl + '" playsinline></video>';
+            html += '  <video src="' + previewUrl + '" playsinline style="cursor:pointer;"></video>';
             html += '  <div class="uvd-video-play-pause-overlay">';
             html += '    <div class="uvd-play-icon"></div>';
             html += '  </div>';
@@ -97,7 +99,7 @@ jQuery(document).ready(function($) {
         }
         html += '</div>';
 
-        var resultContainer = $('#uvd-result-container');
+        var resultContainer = wrapper.find('#uvd-result-container');
         resultContainer.html(html).fadeIn(400);
         
         var videoWrapper = resultContainer.find('.uvd-video-preview-wrapper');
@@ -120,7 +122,7 @@ jQuery(document).ready(function($) {
             videoWrapper.find('.uvd-video-play-pause-overlay').html('<div class="uvd-play-icon"></div>');
         });
 
-        $('.uvd-download-btn').on('click', function(e) {
+        resultContainer.find('.uvd-download-btn').on('click', function(e) {
             var $this = $(this);
             var type = $this.attr('data-type');
             var originalHtml = $this.html();
@@ -145,11 +147,12 @@ jQuery(document).ready(function($) {
             var shouldShowAd = (type === 'hd' && uvd_ajax.enable_ads_hd) || (type === 'sd' && uvd_ajax.enable_ads_sd);
 
             if (shouldShowAd) {
-                e.preventDefault(); // Stop native navigation to show the ad modal
+                e.preventDefault(); 
                 pendingDownload = {
-                    url: $this.attr('href')
+                    url: $this.attr('href'),
+                    wrapper: wrapper
                 };
-                showAdModal();
+                showAdModal(wrapper);
             }
         });
 
@@ -158,16 +161,15 @@ jQuery(document).ready(function($) {
         }, 500);
     }
 
-    function showAdModal() {
-        var modal = $('#uvd-ad-modal');
-        var adBody = $('#uvd-ad-body');
-        var closeBtn = $('#uvd-close-ad');
+    function showAdModal(wrapper) {
+        var modal = wrapper.find('#uvd-ad-modal');
+        var adBody = wrapper.find('#uvd-ad-body');
+        var closeBtn = wrapper.find('#uvd-close-ad');
         
         adBody.html(uvd_ajax.ad_code);
-        closeBtn.hide(); // Hide close button initially
+        closeBtn.hide(); 
         modal.fadeIn(300);
 
-        // Show close button after delay
         var delay = parseInt(uvd_ajax.ad_delay) || 2;
         setTimeout(function() {
             closeBtn.fadeIn(200);
@@ -180,12 +182,11 @@ jQuery(document).ready(function($) {
         });
     }
 
-    $('#uvd-close-ad').on('click', function() {
+    $('.uvd-main-wrapper').on('click', '#uvd-close-ad', function() {
         if (pendingDownload) {
-            // Trigger native download navigation (this is fully supported by iOS Safari for cross-origin if headers are correct)
             window.location.href = pendingDownload.url;
             pendingDownload = null;
         }
-        $('#uvd-ad-modal').fadeOut(200);
+        $(this).closest('#uvd-ad-modal').fadeOut(200);
     });
 });

@@ -192,7 +192,7 @@ class UniversalVideoDownloader {
             wp_send_json_error(['message' => 'Please provide a valid Facebook video URL.']);
         }
 
-        // Expanded Headers for more robust scraping
+        // The working connection logic
         $wp_args = [
             'timeout'    => 30,
             'redirection' => 5,
@@ -202,6 +202,7 @@ class UniversalVideoDownloader {
                 'Accept-Language' => 'en-US,en;q=0.9',
                 'Cache-Control'   => 'no-cache',
                 'Pragma'          => 'no-cache',
+                'Cookie'          => 'm_pixel_ratio=1; wd=1920x1080;', // Ghost Cookie for bot bypass
                 'Sec-Fetch-Dest'  => 'document',
                 'Sec-Fetch-Mode'  => 'navigate',
                 'Sec-Fetch-Site'  => 'none',
@@ -213,40 +214,50 @@ class UniversalVideoDownloader {
 
         $response = wp_remote_get($url, $wp_args);
         if (is_wp_error($response)) {
-            error_log('UVD Fetch Error: ' . $response->get_error_message());
-            wp_send_json_error(['message' => 'Failed to reach Facebook: ' . $response->get_error_message()]);
+            wp_send_json_error(['message' => 'Server Connectivity Issue. Please try again.']);
         }
 
         $body = wp_remote_retrieve_body($response);
         $video_data = [];
 
-        // More robust patterns
+        // 1. Primary: OpenGraph Meta Tags (Most reliable for Public videos)
+        if (preg_match('/property="og:video" content="([^"]+)"/', $body, $m)) {
+            $video_data['sd'] = htmlspecialchars_decode($m[1]);
+        } elseif (preg_match('/property="og:video:url" content="([^"]+)"/', $body, $m)) {
+            $video_data['sd'] = htmlspecialchars_decode($m[1]);
+        }
+
+        // 2. Secondary: Exhaustive JSON Patterns
         $patterns = [
             'hd' => [
                 '/browser_native_hd_url":"([^"]+)"/',
                 '/"hd_src":"([^"]+)"/',
                 '/"playable_url_quality_hd":"([^"]+)"/',
-                '/hd_src_no_ratelimit":"([^"]+)"/'
+                '/hd_src_no_ratelimit":"([^"]+)"/',
+                '/video_hd_url":"([^"]+)"/'
             ],
             'sd' => [
                 '/browser_native_sd_url":"([^"]+)"/',
                 '/"sd_src":"([^"]+)"/',
                 '/"playable_url":"([^"]+)"/',
-                '/sd_src_no_ratelimit":"([^"]+)"/'
+                '/sd_src_no_ratelimit":"([^"]+)"/',
+                '/video_sd_url":"([^"]+)"/'
             ]
         ];
 
-        foreach ($patterns['hd'] as $pattern) {
-            if (preg_match($pattern, $body, $matches)) {
-                $video_data['hd'] = $this->clean_str($matches[1]);
+        foreach ($patterns['hd'] as $p) {
+            if (preg_match($p, $body, $m)) {
+                $video_data['hd'] = $this->clean_str($m[1]);
                 break;
             }
         }
 
-        foreach ($patterns['sd'] as $pattern) {
-            if (preg_match($pattern, $body, $matches)) {
-                $video_data['sd'] = $this->clean_str($matches[1]);
-                break;
+        if (empty($video_data['sd'])) {
+            foreach ($patterns['sd'] as $p) {
+                if (preg_match($p, $body, $m)) {
+                    $video_data['sd'] = $this->clean_str($m[1]);
+                    break;
+                }
             }
         }
 
