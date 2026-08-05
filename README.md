@@ -3,6 +3,7 @@
 A powerful, minimalist WordPress plugin to download public Facebook videos and Reels directly. No external APIs required. Includes ad monetization features, custom appearance settings, and a restricted-mode custom player.
 
 ## 🚀 Key Features
+
 - **Direct Scraping**: Downloads videos (HD/SD) without relying on paid 3rd-party APIs.
 - **Minimalist Header-less UI**: Clean, centered design (90% width on Desktop, 100% on Mobile).
 - **Ad Monetization**:
@@ -20,11 +21,13 @@ A powerful, minimalist WordPress plugin to download public Facebook videos and R
 - **Smart Filenaming**: Automatically names downloaded files based on the video title.
 
 ## 🛠️ Installation
+
 1.  **Download the ZIP**: Grab the latest release `Facebook Video Downloader V.2.0.zip`.
 2.  **Upload to WordPress**: Go to **Plugins > Add New > Upload Plugin**.
 3.  **Activate**: Once activated, locate the **"FB Downloader"** menu in your WordPress sidebar.
 
 ## 📖 How to Use
+
 1.  **Placement**: Use the shortcode `[video_downloader]` on any Page or Post.
 2.  **Configuration**:
     - Go to **FB Downloader** > Settings.
@@ -38,12 +41,15 @@ A powerful, minimalist WordPress plugin to download public Facebook videos and R
     - If ads are enabled, a popup appears; once closed (after the delay), the download starts automatically via JS Blobs.
 
 ## 🔒 Requirements
+
 - WordPress 5.0+
 - PHP 7.4+
 - `wp_remote_get` support enabled on your server.
 
 ## 👨‍💻 Author
+
 Developed by **Rizwan** - [rizwan.one](https://rizwan.one)
 
 ---
-*Disclaimer: This plugin is intended for downloading public content with the creator's permission. Ensure compliance with Facebook's TOS.*
+
+_Disclaimer: This plugin is intended for downloading public content with the creator's permission. Ensure compliance with Facebook's TOS._
